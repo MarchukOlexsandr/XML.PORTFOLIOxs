@@ -288,9 +288,14 @@ function scBindApi(){
         try{ scWidget.setVolume(muted ? 0 : 100); }catch(e){}
         scWidget.bind(SC.Widget.Events.PLAY, ()=>{
           beatOn = true; beatT0 = performance.now();
+          eqWrap.classList.add('open');   // эквалайзер возвращается вместе с музыкой
           scLoadLyrics();
         });
-        const stop = ()=>{ beatOn = false; };
+        const stop = ()=>{
+          beatOn = false;
+          document.body.classList.remove('dark-track', 'beat'); // сайт в норму
+          eqWrap.classList.remove('open');                      // эквалайзер в окне закрывается
+        };
         scWidget.bind(SC.Widget.Events.PAUSE, stop);
         scWidget.bind(SC.Widget.Events.FINISH, stop);
         // синхра большой надписи с позицией трека (5й трек)
@@ -779,6 +784,8 @@ scOpenBtn.addEventListener('click', ()=>{
     scOpenBtn.classList.remove('playing');
     eqWrap.classList.remove('open');
     clearInterval(scInt);
+    if(scWidget){ try{ scWidget.pause(); }catch(e){} }   // реально останавливаем музыку
+    document.body.classList.remove('dark-track', 'beat'); // сайт в норму
     beatOn = false;
   }
 });
@@ -788,6 +795,7 @@ document.getElementById('sc-close').addEventListener('click', ()=>{
   eqWrap.classList.remove('open');
   clearInterval(scInt);
   scFrame.src = ''; scLoaded = false; scWidget = null;   // STOP
+  document.body.classList.remove('dark-track', 'beat'); // сайт в норму
   beatOn = false;
 });
 
