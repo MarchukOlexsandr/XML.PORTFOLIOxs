@@ -82,7 +82,7 @@ document.getElementById('btn-yes').addEventListener('click', ()=>{
   finished = true; setTimeout(enterSite, 350);
 });
 /* NO → окно ошибки → медиаплеер с видео на сайте */
-const RICK_EMBED = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0';
+const RICK_EMBED = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&enablejsapi=1';
 const errWrap = document.getElementById('err-wrap');
 const errCount = document.getElementById('err-count');
 const vidWrap = document.getElementById('vid-wrap');
@@ -223,7 +223,8 @@ addEventListener('mousemove', e=>{
   cmy += (tmy - cmy) * .055;
   const sy = scrollY;
   const b = beatOn ? kick(now || performance.now()) : 0;
-  const amp = 1 + b * 0.9;            // параллакс «вдыхается» на бите
+  const dark = document.body.classList.contains('dark-track');
+  const amp = 1 + b * (dark ? 2.4 : 0.9);  // на 5м треке параллакс качается сильнее
   pxEls.forEach(el=>{
     const d = parseFloat(el.dataset.px) || .2;
     const s = parseFloat(el.dataset.py) || 0;
@@ -284,6 +285,7 @@ function scBindApi(){
     try{
       scWidget = SC.Widget(scFrame);
       scWidget.bind(SC.Widget.Events.READY, ()=>{
+        try{ scWidget.setVolume(muted ? 0 : 100); }catch(e){}
         scWidget.bind(SC.Widget.Events.PLAY, ()=>{
           beatOn = true; beatT0 = performance.now();
           scLoadLyrics();
@@ -445,6 +447,25 @@ setInterval(()=>{
     b.style.height = Math.min(98, h) + '%';
   });
 }, 95);
+
+/* ============ ФОНОВЫЙ ЭКВАЛАЙЗЕР 5ГО ТРЕКА (за шахматой и текстом) ============ */
+const bgEq = document.getElementById('bg-eq');
+const BG_N = 46, bgBars = [];
+if(bgEq){
+  for(let i = 0; i < BG_N; i++){
+    const b = document.createElement('i');
+    bgEq.appendChild(b); bgBars.push(b);
+  }
+  setInterval(()=>{
+    if(!darkMode()) return;
+    const boost = beatOn ? kick(performance.now()) : 0;
+    bgBars.forEach((b, i)=>{
+      const wave = Math.sin(performance.now()/380 + i*.45) * .5 + .5;
+      const h = 3 + wave*22 + Math.random()*14 + boost*(30 + Math.random()*55);
+      b.style.height = Math.min(100, h) + '%';
+    });
+  }, 90);
+}
 
 /* ================= RANDOM GLITCH ERRORS ================= */
 const RND_MSGS = [
@@ -641,6 +662,7 @@ setInterval(()=>{
 const hoverSnd = new Audio('assets/audio/hover.mp3');
 let hoverLast = 0;
 function playHover(){
+  if(muted) return;
   const now = performance.now();
   if(now - hoverLast < 70) return; // анти-пулемёт
   hoverLast = now;
@@ -655,6 +677,24 @@ document.addEventListener('mouseover', e=>{
   if(!t || (e.relatedTarget && t.contains(e.relatedTarget))) return; // вход на объект, не внутри него
   playHover();
 });
+
+/* ================= GLOBAL MUTE — глушит всё: ambient, hover, SoundCloud, видео ================= */
+let muted = false;
+const sndBtn = document.getElementById('snd-toggle');
+function applyMute(){
+  try{ ambient.muted = muted; }catch(e){}
+  try{ hoverSnd.muted = muted; }catch(e){}
+  if(scWidget){ try{ scWidget.setVolume(muted ? 0 : 100); }catch(e){} }
+  if(vidFrame && vidFrame.src && vidFrame.contentWindow){
+    try{ vidFrame.contentWindow.postMessage(JSON.stringify({event:'command', func: muted ? 'mute' : 'unMute', args:[]}), '*'); }catch(e){}
+  }
+  if(sndBtn){
+    sndBtn.textContent = muted ? 'SND:OFF' : 'SND:ON';
+    sndBtn.classList.toggle('muted', muted);
+    sndBtn.setAttribute('data-hover', muted ? 'UNMUTE' : 'MUTE');
+  }
+}
+if(sndBtn) sndBtn.addEventListener('click', ()=>{ muted = !muted; applyMute(); });
 
 /* ================= MAX PROTECTION ================= */
 function denyErr(x, y, msg){

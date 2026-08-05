@@ -389,6 +389,14 @@ nav a:hover{color:var(--blue)}
 }
 .talk-btn i{width:14px;height:14px;background:var(--blue);display:grid;place-items:center;font-style:normal;color:#fff;font-size:10px}
 .talk-btn:hover{background:var(--blue)}
+.snd-btn{
+  background:var(--paper);color:var(--ink);border:2px solid var(--ink);
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:8px 12px;
+  box-shadow:3px 3px 0 var(--ink);transition:background .12s,color .12s,transform .12s,box-shadow .12s;
+}
+.snd-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.snd-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.snd-btn.muted{background:var(--ink);color:var(--paper);text-decoration:line-through}
 
 /* hero */
 .hero{
@@ -490,35 +498,48 @@ body.dark-track .h-mid{position:fixed;inset:0;z-index:1}
   color:rgba(0,220,255,.42);filter:blur(1.5px);
   transform:translate(6px,20px);text-shadow:none;
 }
-/* прячем лишний текст на 5м треке */
-body.dark-track h1.name,
-body.dark-track .role,
+/* на 5м треке все объекты остаются и двигаются под бит (правила ниже) */
+/* ============ ФОНОВЫЙ ЭКВАЛАЙЗЕР 5ГО ТРЕКА ============ */
+/* полосы позади шахматы и текста, параллакс через data-px */
+.bg-eq{
+  position:absolute;left:-4vw;right:-4vw;bottom:6vh;height:52vh;
+  display:flex;align-items:flex-end;gap:6px;z-index:0;
+  opacity:0;transition:opacity 1.2s ease;pointer-events:none;
+}
+body.dark-track .bg-eq{opacity:.85}
+.bg-eq i{
+  flex:1;height:4%;min-width:3px;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.85) 0 6px,transparent 6px 9px);
+  transition:height .09s linear;
+}
+.bg-eq i:nth-child(3n){background:repeating-linear-gradient(0deg,rgba(0,220,255,.8) 0 6px,transparent 6px 9px)}
+.bg-eq i:nth-child(7n){background:repeating-linear-gradient(0deg,rgba(122,122,255,.9) 0 6px,transparent 6px 9px)}
+/* объекты сайта двигаются под бит на 5м треке */
+body.dark-track header,
+body.dark-track .btn,
+body.dark-track .sc-player,
+body.dark-track .eq-wrap,
+body.dark-track .hero .plus,
+body.dark-track .sys-box,
 body.dark-track .brackets,
 body.dark-track .mini-box,
-body.dark-track .data-lines,
 body.dark-track .big-01,
-body.dark-track .sys-box,
-body.dark-track .scroll-box{opacity:0;transition:opacity 1s}
-/* на 5м треке остаются ТОЛЬКО плеер, шахматный король и текст песни */
-body.dark-track header,
-body.dark-track .marquee,
-body.dark-track .sec2,
-body.dark-track .sec3,
-body.dark-track footer,
-body.dark-track .eq-wrap,
-body.dark-track .px-layer,
-body.dark-track .coord,
-body.dark-track .hero-right-tag,
-body.dark-track .hero .plus,
-body.dark-track .h-col,
-body.dark-track .h-right,
-body.dark-track .hero-line,
-body.dark-track .dots3,
-body.dark-track .blue-block,
-body.dark-track .hatch{
-  opacity:0 !important;pointer-events:none !important;
-  transition:opacity 1.1s ease;
+body.dark-track .qr-row img,
+body.dark-track .snd-btn,
+body.dark-track .marquee{
+  transition:transform .1s ease-out;
 }
+body.dark-track.beat header{transform:translateY(-4px)}
+body.dark-track.beat .btn{transform:scale(1.06)}
+body.dark-track.beat .sc-player{box-shadow:14px 14px 0 rgba(26,26,255,.6)}
+body.dark-track.beat .sys-box{transform:scale(1.07) rotate(-1deg)}
+body.dark-track.beat .brackets{transform:scale(1.12) rotate(2deg)}
+body.dark-track.beat .mini-box{transform:scale(1.08)}
+body.dark-track.beat .big-01{transform:scale(1.06) translateY(-3px)}
+body.dark-track.beat .qr-row img{transform:scale(1.05) rotate(-1.5deg)}
+body.dark-track.beat .marquee{transform:translateY(-2px)}
+body.dark-track.beat .snd-btn{transform:scale(1.1)}
+
 /* ============ КИНЕТИЧЕСКАЯ ТИПОГРАФИКА (motion design) ============ */
 /* смена строки — целая фраза въезжает одним из трёх приёмов */
 .lyrics-big.fx-zoom{animation:fxZoom .5s cubic-bezier(.16,1.2,.3,1)}
@@ -1001,4 +1022,5 @@ img{-webkit-user-drag:none;user-drag:none}
   .exit-zone{display:none}
   .mob-btn{display:grid}
   .talk-btn{display:none}
+  .snd-btn{margin-left:auto;padding:7px 9px;font-size:10px}
 }
